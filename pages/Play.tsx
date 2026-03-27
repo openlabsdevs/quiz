@@ -96,6 +96,54 @@ const Play: React.FC = () => {
     }
   }, [session?.currentQuestionIndex, session?.status]);
 
+  // Anti-Cheat Mechanisms
+  useEffect(() => {
+    // Only enforce during active quiz stages
+    if (!session || session.status === "finished") return;
+
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+
+    const handleCopy = (e: ClipboardEvent) => {
+      e.preventDefault();
+      alert("Cheating detected: Copying text is prohibited. You have been ejected.");
+      navigate("/dashboard");
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent Print Screen
+      if (e.key === "PrintScreen") {
+        e.preventDefault();
+        alert("Cheating detected: Screenshots are prohibited. You have been ejected.");
+        navigate("/dashboard");
+      }
+      // Prevent Mac/Windows screenshot shortcuts (Cmd/Ctrl + Shift + 3/4/5/S)
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && ["3", "4", "5", "s", "S"].includes(e.key)) {
+        e.preventDefault();
+        alert("Cheating detected: Screenshots are prohibited. You have been ejected.");
+        navigate("/dashboard");
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        alert("Cheating detected: Switching tabs or minimizing the window is prohibited. You have been ejected.");
+        navigate("/dashboard");
+      }
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("copy", handleCopy);
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("copy", handleCopy);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [navigate, session?.status]);
+
   const handleSubmit = async () => {
     if (selectedIdx === null || hasSubmitted || !user || !quizId || !session)
       return;
@@ -182,7 +230,7 @@ const Play: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-6 max-w-2xl mx-auto w-full relative">
+    <div className="min-h-screen flex flex-col p-6 max-w-2xl mx-auto w-full relative select-none">
       <div className="flex-1 flex flex-col justify-center">
         <BlurReveal className="w-full space-y-8">
           {/* Status Bar */}
