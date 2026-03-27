@@ -16,6 +16,7 @@ const Monitor: React.FC = () => {
     loading: loadingControl,
     initializeSession,
     pushQuestion,
+    revealFirstQuestion,
     revealOptions,
     revealAnswer,
     endQuiz,
@@ -123,14 +124,29 @@ const Monitor: React.FC = () => {
           </div>
 
           <div className="flex gap-4">
-            {session.status === "waiting" && (
-              <Button
-                onClick={() => revealOptions(session.currentQuestionIndex)}
-                className="w-40 bg-black"
-              >
-                Start Timer
-              </Button>
-            )}
+            {session.status === "waiting" &&
+              session.currentQuestionIndex === 0 &&
+              session.currentQuestionText === "Waiting for host..." && (
+                <Button
+                  onClick={revealFirstQuestion}
+                  className="w-40 bg-zinc-800"
+                >
+                  Reveal Question
+                </Button>
+              )}
+
+            {session.status === "waiting" &&
+              !(
+                session.currentQuestionIndex === 0 &&
+                session.currentQuestionText === "Waiting for host..."
+              ) && (
+                <Button
+                  onClick={() => revealOptions(session.currentQuestionIndex)}
+                  className="w-40 bg-black"
+                >
+                  Start Timer
+                </Button>
+              )}
 
             {session.status === "active" && (
               <Button

@@ -35,15 +35,14 @@ export const useQuizControl = (quizId: string) => {
 
   const initializeSession = async () => {
     if (questions.length === 0) return;
-    const firstQ = questions[0];
 
     await setDoc(
       liveSessionRef,
       {
         status: "waiting",
         currentQuestionIndex: 0,
-        currentQuestionText: firstQ.text,
-        currentImageUrl: firstQ.imageUrl || null,
+        currentQuestionText: "Waiting for host...",
+        currentImageUrl: null,
         totalQuestions: questions.length,
       },
       { merge: true },
@@ -64,12 +63,24 @@ export const useQuizControl = (quizId: string) => {
     });
   };
 
+  const revealFirstQuestion = async () => {
+    if (questions.length === 0) return;
+    const firstQ = questions[0];
+
+    await updateDoc(liveSessionRef, {
+      currentQuestionText: firstQ.text,
+      currentImageUrl: firstQ.imageUrl || null,
+    });
+  };
+
   const revealOptions = async (index: number) => {
     if (index >= questions.length) return;
     const q = questions[index];
 
     await updateDoc(liveSessionRef, {
       status: "active",
+      currentQuestionText: q.text,
+      currentImageUrl: q.imageUrl || null,
       currentOptions: q.options,
       startTime: Date.now(), // Use generic timestamp number for easier client math
     });
@@ -103,6 +114,7 @@ export const useQuizControl = (quizId: string) => {
     loading,
     initializeSession,
     pushQuestion,
+    revealFirstQuestion,
     revealOptions,
     revealAnswer,
     endQuiz,
