@@ -102,9 +102,9 @@ const LeaderboardPage: React.FC = () => {
           }),
         );
 
-        // 5. Sort (Score DESC, Time ASC)
+        // 5. Sort (Correct DESC, Time ASC)
         rowsData.sort((a, b) => {
-          if (b.score !== a.score) return b.score - a.score;
+          if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
           return a.totalTime - b.totalTime;
         });
 

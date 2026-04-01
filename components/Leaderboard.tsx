@@ -142,7 +142,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
         });
 
         const sorted = Object.values(calculatedScores).sort((a, b) => {
-          if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+          if (b.correctCount !== a.correctCount) return b.correctCount - a.correctCount;
           return a.totalTime - b.totalTime;
         });
 
