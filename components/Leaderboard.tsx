@@ -6,6 +6,8 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  updateDoc,
+  arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import {
@@ -20,6 +22,7 @@ interface LeaderboardProps {
   quizId: string;
   questions: Question[];
   currentSession?: LiveSession | null;
+  isAdminView?: boolean;
 }
 
 interface UserScore {
@@ -34,9 +37,21 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   quizId,
   questions,
   currentSession,
+  isAdminView,
 }) => {
   const [scores, setScores] = useState<UserScore[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleDisqualify = async (uid: string) => {
+    if (!window.confirm("Are you sure you want to disqualify this player?")) return;
+    try {
+      await updateDoc(doc(db, "live_sessions", quizId), {
+        disqualifiedUsers: arrayUnion(uid)
+      });
+    } catch (e) {
+      console.error("Failed to disqualify", e);
+    }
+  };
 
   useEffect(() => {
     if (!quizId) return;
@@ -216,8 +231,16 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                     <td className="px-5 py-3 text-center font-mono text-xs text-zinc-500">
                       {s.totalTime.toFixed(1)}s
                     </td>
-                    <td className="px-5 py-3 text-right font-mono font-bold text-zinc-900">
+                    <td className="px-5 py-3 text-right font-mono font-bold text-zinc-900 whitespace-nowrap">
                       {s.totalScore.toLocaleString()}
+                      {isAdminView && (
+                        <button 
+                          onClick={() => handleDisqualify(s.userId)} 
+                          className="ml-4 px-2 py-1 text-[10px] bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                        >
+                          Disqualify
+                        </button>
+                      )}
                     </td>
                   </motion.tr>
                 ))}

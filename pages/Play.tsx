@@ -96,6 +96,15 @@ const Play: React.FC = () => {
     }
   }, [session?.currentQuestionIndex, session?.status]);
 
+  // Disqualification Guard
+  useEffect(() => {
+    const isLocallyDisqualified = localStorage.getItem(`disqualified_${quizId}`) === "true";
+    if (isLocallyDisqualified || (session?.disqualifiedUsers && user?.uid && session.disqualifiedUsers.includes(user.uid))) {
+      alert("You have been disqualified.");
+      navigate("/dashboard");
+    }
+  }, [session?.disqualifiedUsers, user?.uid, navigate, quizId]);
+
   // Anti-Cheat Mechanisms
   useEffect(() => {
     // Only enforce during active quiz stages
@@ -126,8 +135,18 @@ const Play: React.FC = () => {
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        alert("Cheating detected: Switching tabs or minimizing the window is prohibited. You have been ejected.");
-        navigate("/dashboard");
+        const warningKey = `warnings_${quizId}`;
+        const currentWarnings = parseInt(localStorage.getItem(warningKey) || "0", 10);
+
+        if (currentWarnings < 3) {
+          const newWarnings = currentWarnings + 1;
+          localStorage.setItem(warningKey, newWarnings.toString());
+          alert(`Cheating warning: Switching tabs or minimizing the window is prohibited. This is warning ${newWarnings}/3.`);
+        } else {
+          localStorage.setItem(`disqualified_${quizId}`, "true");
+          alert("Cheating detected: You have reached maximum warnings for switching apps. You have been ejected.");
+          navigate("/dashboard");
+        }
       }
     };
 

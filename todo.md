@@ -1,0 +1,4 @@
+- Anti cheating while screen is active or not disqualify
+- Admin can disqualify anyone
+- view timer in admin ques
+- Admin can edit questions in admin pannal

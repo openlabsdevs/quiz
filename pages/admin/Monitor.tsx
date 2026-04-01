@@ -24,6 +24,7 @@ const Monitor: React.FC = () => {
 
   const { session } = useQuizListener(quizId || "");
   const [responsesCount, setResponsesCount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     if (
@@ -45,6 +46,41 @@ const Monitor: React.FC = () => {
     const unsub = onSnapshot(q, (snap) => setResponsesCount(snap.size));
     return () => unsub();
   }, [quizId, session?.currentQuestionIndex]);
+
+  // Timer Logic
+  useEffect(() => {
+    if (!session || !questions.length || session.status !== "active") {
+      setTimeLeft(null);
+      return;
+    }
+
+    const currentQ = questions[session.currentQuestionIndex];
+    if (!currentQ) return;
+
+    const limit = currentQ.timeLimit || 30;
+
+    // Calculate start time
+    const now = Date.now();
+    const start = session.startTime
+      ? typeof session.startTime === "number"
+        ? session.startTime
+        : session.startTime.toMillis()
+      : now;
+
+    const elapsed = (now - start) / 1000;
+    const remaining = Math.max(0, limit - elapsed);
+
+    setTimeLeft(Math.floor(remaining));
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsed = (now - start) / 1000;
+      const remaining = Math.max(0, limit - elapsed);
+      setTimeLeft(Math.floor(remaining));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [session, questions]);
 
   if (loadingControl || !session)
     return <div className="p-12 text-center">Loading Control Room...</div>;
@@ -74,8 +110,15 @@ const Monitor: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-zinc-200 p-8 flex flex-col items-center text-center space-y-6">
-              <div className="text-xs font-mono uppercase bg-black text-white px-2 py-1 rounded">
-                {session.status}
+              <div className="flex gap-4 items-center">
+                <div className="text-xs font-mono uppercase bg-black text-white px-2 py-1 rounded">
+                  {session.status}
+                </div>
+                {session.status === "active" && timeLeft !== null && (
+                  <div className={`text-xl font-bold font-mono ${timeLeft <= 5 ? "text-red-500 animate-pulse" : "text-black"}`}>
+                    {timeLeft}s
+                  </div>
+                )}
               </div>
 
               {currentQ?.imageUrl && (
@@ -111,7 +154,7 @@ const Monitor: React.FC = () => {
         {/* Bottom: Leaderboard */}
         <div className="h-1/3 min-h-[300px] bg-zinc-50 p-6 overflow-y-auto border-t border-zinc-200">
           <BlurReveal delay={0.2} className="max-w-4xl mx-auto">
-            <Leaderboard quizId={quizId || ""} questions={questions} />
+            <Leaderboard quizId={quizId || ""} questions={questions} isAdminView={true} />
           </BlurReveal>
         </div>
       </div>

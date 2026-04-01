@@ -121,6 +121,13 @@ const AdminDashboard: React.FC = () => {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/admin/edit/${quiz.id}`)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
                           variant={
                             quiz.status === "ended" ? "outline" : "primary"
                           }

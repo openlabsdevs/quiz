@@ -39,6 +39,7 @@ export interface LiveSession {
   correctIndex?: number; // New: Exposed only during 'revealed'
   startTime?: Timestamp | null;
   totalQuestions: number;
+  disqualifiedUsers?: string[];
 }
 
 export interface Response {

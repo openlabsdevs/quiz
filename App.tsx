@@ -7,6 +7,7 @@ import Play from "./pages/Play";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import Monitor from "./pages/admin/Monitor";
 import CreateQuiz from "./pages/admin/CreateQuiz";
+import EditQuiz from "./pages/admin/EditQuiz";
 import LeaderboardPage from "./pages/LeaderboardPage";
 
 const ProtectedRoute = ({
@@ -79,6 +80,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute requireAdmin>
                   <CreateQuiz />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/edit/:quizId"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <EditQuiz />
                 </ProtectedRoute>
               }
             />
